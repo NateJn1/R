@@ -1,0 +1,215 @@
+---
+title: "Stat 3202 Homework 6"
+author: "Nathan Johnson.9254"
+date: "2023-04-20"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Problem 1:**
+
+**Part a:**
+```{r}
+library(readr)
+winter.dataset = read.csv(file = "winter.csv")
+```
+I was unable to load the data set winter using texmex, but was able to install texmex.
+
+**Part b:**
+```{r}
+winter.NO2 = winter.dataset$NO2
+
+hist(winter.NO2, col = "azure", breaks = 10, main = "Nitrogen Dioxide in ppb in Winter", xlab = "Parts per Billion")
+```
+
+The histogram roughly approximates a normal distribution with a right skewed tail. 
+
+**Part c:**
+
+$H_0 : \mu_{NO_2}=44$ vs $H_A: \mu_{NO_2} \neq 44$.
+
+Since variance is unknown, we will be using: $$t = \frac{\bar x - 44}{s/\sqrt{n}} \sim t_{n-1}$$.
+
+To construct the confidence interval we will need to follow: $$\bar x \pm t_{1-\alpha/2,n-1)}\frac{s}{\sqrt n}$$
+```{r}
+alpha = 0.01
+
+n = length(winter.NO2)
+s2 = var(winter.NO2)
+xbar = mean(winter.NO2)
+
+t = qt(1-alpha/2,n-1)
+
+CIlower = xbar - t*(sqrt(s2)/sqrt(n))
+CIupper = xbar + t*(sqrt(s2)/sqrt(n))
+
+c(CIlower,CIupper)
+```
+
+We are 99% confident the true mean of NO2 in Parts per Billion is between 42.90 and 45.43, thus we fail to reject the null hypothesis.
+
+**Part d:**
+
+```{r}
+winter.NO = winter.dataset$NO
+winter.SO2 = winter.dataset$SO2
+winter.PM10 = winter.dataset$PM10
+
+hist(log(winter.NO), main = "Histogram of the log of NO in ppb in Winter", xlab = "Parts per Billion", breaks = 10, col = "indianred")
+hist(log(winter.SO2), main = "Histogram of the log of SO2 in ppb in Winter", xlab = "Parts per Billion", breaks = 10, col = "gold1")
+hist(log(winter.PM10), main = "Histogram of the log of PM10 in ppb in Winter", xlab = "Parts per Billion", breaks = 10, col = "sandybrown")
+```
+
+The log of NO histogram and the log of PM10 histogram have slight left and right skews, but not enough to justify using something other than the normal distribution to describe them.
+
+**Part e:**
+$H_0: \mu_{log(SO_2)} = 2.8$ vs $H_A: \mu_{log(SO_2)} < 2.8$.
+
+As in part c, we will also be using the t test statistic.
+```{r}
+alpha = 0.01
+
+n = length(winter.SO2)
+mean.log = mean(log(winter.SO2))
+s2.log = var(log(winter.SO2))
+mu = 2.8
+
+samp.dist = rt(n, n-1)
+
+hist(samp.dist, main = "Histogram of sampling distribution of the test statistic", xlab = "Values")
+
+t.stat = (mean.log - mu) / (sqrt(s2.log)/sqrt(n))
+t.stat
+
+rr = qt(alpha, n-1)
+rr
+
+p = pt(t.stat, n-1, lower.tail = TRUE)
+p
+
+t = qt(1-alpha, n-1)
+CIupper = mean.log + t * (sqrt(s2.log)/sqrt(n))
+CIupper
+
+t.test(log(winter.SO2), alternative = "less", mu = mu, conf.level = 1-alpha)
+
+
+```
+
+The t test statistic is equal to -3.45 and the rejection region is $(-\infty, -2.33].$ Already, we see that since our test statistic is in the rejection region, we reject the null hypothesis. We also have out p-value is equal to 0.0003007 which is less than the alpha level at 0.01 so we reject the null hypothesis. And we also notice that the confidence interval of $(-\infty, 2.76]$ does not contain the null hypothesis of 2.8 and thus, we reject the null hypothesis and can say that the air quality is acceptable for the concentration of SO2. 
+
+**Part f:**
+
+Since we are using a single variance parameter, we will be using the chi square test statistic:
+
+$$\chi^2 = (n-1)s^2/\sigma^2\sim^{H_0}\chi^2_{n-1}$$
+
+```{r}
+set.seed(1)
+alpha = 0.01
+
+n = length(winter.NO2)
+mean = mean(winter.NO2)
+s2 = var(winter.NO2)
+
+sigma2 = 110
+
+samp.dist = rchisq(n, n-1)
+
+hist(samp.dist, main = "Histogram of the sampling distribution of the test statistic", xlab = "Values")
+
+chi.test = (n - 1)*s2/sigma2
+chi.test
+
+chisq = qchisq(1-alpha, n-1)
+chisq
+
+chisq.lower = qchisq(1-alpha, n-1)
+CIlower = (n-1)*s2/chisq.lower
+CIlower
+
+s2
+library(DescTools)
+VarTest(winter.NO2, alternative = "greater", sigma.squared = 110, conf.level = 1-alpha)
+```
+The test statistic is 614.95 and the rejection region is $[609.74,\infty)$. Since the test statistic is within the rejection region, we reject the null hypothesis in favor of the alternative hypothesis. We can also look at the confidence interval. We are 99% confident the true variance lies within $[110.94, \infty).$ The sample variance lies within the confidence interval which means we fail to reject the null hypothesis according to the confidence interval. Since the p-value is less than the alpha level, according to VarTest, we reject the null hypothesis. I am unsure what this means since I don't believe we were ever taught how to handle contradictory statements, but I am going to assume that since 2 out of the 3 tests reject the null hypothesis, we will reject the null hypothesis in favor of the alternative hypothesis.
+
+**Problem 2:**
+
+**Part a:**
+```{r}
+library(readr)
+summer.dataset = read.csv(file = "summer.csv")
+summer.NO2 = summer.dataset$NO2
+hist(summer.NO2, col = "azure", breaks = 10, main = "Nitrogen Dioxide in ppb in Summer", xlab = "Parts per Billion")
+```
+As can be seen, the distribution of NO2 in ppb is roughly normal.
+
+**Part b:**
+We need to check: $H_0: \frac{\sigma^2_1}{\sigma^2_2} = 1$ or $H_A: \frac{\sigma^2_1}{\sigma^2_2} \neq 1$.
+
+```{r}
+alpha = 0.01
+
+nw = length(winter.NO2)
+ns = length(summer.NO2)
+
+s2w = var(winter.NO2)
+s2s = var(summer.NO2)
+
+samp.dist = rf(nw + ns, nw - 1, ns - 1)
+
+hist(samp.dist, main = "Histogram of the sampling distribution of the test statistic", xlab = "Values")
+
+test.stat = s2w / s2s
+test.stat
+
+F.stat.lower = qf(alpha/2, nw - 1, ns - 1)
+F.stat.upper = qf(1-alpha/2, nw - 1, ns - 1)
+F.stat.lower
+F.stat.upper
+
+CIlower = s2w / (s2s * F.stat.upper)
+CIupper = s2w / (s2s * F.stat.lower)
+CIlower
+CIupper
+
+VarTest(winter.NO2, summer.NO2, alternative = "two.sided", conf.level = 1 - alpha)
+```
+
+The rejection region is $(-\infty, 0.80]$ and $[1.24, \infty)$ and the test statistic is 0.91 which is not contained in the rejection region so we fail to reject the null hypothesis. The confidence interval is $[0.73,1.13]$ which contains 1 so we fail to reject the null hypothesis once again.
+
+**Part c:**
+
+Based on part b, the variances of the summer NO2 and winter NO2 in ppb are equal.
+
+```{r}
+t.test(winter.NO2, summer.NO2, var.equal = TRUE, conf.level = 1 - alpha)
+```
+
+We are 99% confident the means of the sample are not equal. Since the summer is lower in NO2 in ppb, it may be less hazardous to individuals with asthma. That said, summer and winter are the same variance so summer still may be hazardous.
+
+**Problem 3:**
+**Part a:**
+We must do a single population proportion parameter. 
+$np = 75 * (12/75) = 12 > 5.$
+$n(1-p) = 75 * (63/75) = 63 > 5.$
+We must test for: $H_0: p = 0.2$ vs. $H_A: p < 0.2$.
+
+The drug company will need to disclose this side effect if the null hypothesis is not contained in the confidence interval of the population proportion.
+
+**Part b:**
+```{r}
+alpha = 0.05
+prop.test(12,75,alternative = "less", p = 0.2,correct = FALSE,conf.level = 1 - alpha)
+```
+
+Since 0.2 is contained within the confidence interval, the drug company needs to report the side effect in their drug label.
+
+
+
+
+

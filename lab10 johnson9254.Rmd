@@ -1,0 +1,204 @@
+---
+title: "Stat 3202 Lab 10"
+author: "Nathan Johnson.9254"
+date: "2023-04-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Guided Example 1:**
+```{r}
+library(readr)
+vanillin <- c(38,46,41,36,42,40,34,41,33,
+46,41,39,44,45,41,37,39,36,
+40,43,37,41,39,36,47,36,41,
+38,38,38,33,39,41,36,38,44,39)
+mean(vanillin)
+```
+1. Confidence interval
+Test $H_0: \mu = 42$ vs. $H_1: \mu \neq 42$ using a 99% confidence interval for $\mu$.
+
+```{r}
+alpha = 0.01
+n = length(vanillin)
+xbar = mean(vanillin)
+sigma = 3.52
+
+z = qnorm(1-alpha/2)
+
+CIlower = xbar - z * sigma/sqrt(n)
+CIupper = xbar + z * sigma/sqrt(n)
+
+c(CIlower, CIupper)
+```
+We are 99% confident that the true mean vanillin level of this batch is between 38.05 and 41.03 ppt. Since 42 is not contained within this confidence interval, we reject the null hypothesis, $H_0$.
+
+We conclude that the true mean vanillin level is statistically significantly different from 42.
+
+2. Rejection region
+We are testing the hypotheses $H_0: \mu = 42$ vs. $H_1: \mu \neq 42$.
+$$Z = \frac{\bar x - 42}{\sigma / \sqrt n}$$
+Under the null hypotheses, the test statistic Z follows the distribution $Z \sim N(0,1)$.
+
+We reject the null hypothesis $H_0$ when we observe our test statistic $Z_{obs}$ to be either too high or too low.
+
+```{r}
+alpha = 0.01
+
+rrlower = qnorm(alpha/2)
+rrupper = qnorm(1-alpha/2)
+c(rrlower, rrupper)
+```
+
+The rejection region is $(-\infty, -2.58]$ and $[2.58, \infty)$, and we would reject the null hypothesis when our observed test statistic falls within either of these regions.
+
+```{r}
+Z.obs = (xbar - 42) / (sigma / sqrt(n))
+Z.obs
+```
+We observe $Z_{obs} = -4.25$. Since this falls within the rejection region, we reject the null hypothesis $H_0$. And we conclude that the $\mu \neq 42$. That is the true mean vanillin is statistically significantly different from 42 ppt.
+
+3. Verify with Z Test
+```{r}
+library(DescTools)
+
+ZTest(vanillin, alternative = "two.sided", mu = 42, sd_pop = 3.52, conf.level = 1-alpha)
+```
+
+**Problem 2:**
+```{r}
+library(readr)
+vanillin <- c(38,46,41,36,42,40,34,41,33,
+46,41,39,44,45,41,37,39,36,
+40,43,37,41,39,36,47,36,41,
+38,38,38,33,39,41,36,38,44,39)
+mean(vanillin)
+```
+1. Confidence interval
+Test $H_0: \mu = 42$ vs. $H_1: \mu \neq 42$ using a 99% confidence interval for $\mu$.
+
+```{r}
+alpha = 0.01
+n = length(vanillin)
+xbar = mean(vanillin)
+sigma = sd(vanillin)
+
+t = qt(1-alpha/2, n - 1)
+
+CIlower = xbar - t * sigma/sqrt(n)
+CIupper = xbar + t * sigma/sqrt(n)
+
+c(CIlower, CIupper)
+```
+We are 99% confident that the true mean vanillin level of this batch is between 37.96 and 41.12 ppt. Since 42 is not contained within this confidence interval, we reject the null hypothesis, $H_0$.
+
+We conclude that the true mean vanillin level is statistically significantly different from 42.
+
+2. Rejection region
+We are testing the hypotheses $H_0: \mu = 42$ vs. $H_1: \mu \neq 42$.
+$$t = \frac{\bar x - 42}{s / \sqrt n}$$
+Under the null hypotheses, the test statistic t follows the distribution $t \sim N(0,1)$.
+
+We reject the null hypothesis $H_0$ when we observe our test statistic $t_{obs}$ to be either too high or too low.
+
+```{r}
+alpha = 0.01
+
+rrlower = qt(alpha/2, n - 1)
+rrupper = qt(1-alpha/2, n - 1)
+c(rrlower, rrupper)
+```
+
+The rejection region is $(-\infty, -2.72]$ and $[2.72, \infty)$, and we would reject the null hypothesis when our observed test statistic falls within either of these regions.
+
+```{r}
+t.obs = (xbar - 42) / (sigma / sqrt(n))
+t.obs
+```
+We observe $t_{obs} = -4.24$. Since this falls within the rejection region, we reject the null hypothesis $H_0$. And we conclude that the $\mu \neq 42$. That is the true mean vanillin is statistically significantly different from 42 ppt.
+
+3. Verify with t Test
+```{r}
+library(DescTools)
+
+t.test(vanillin, alternative = "two.sided", mu = 42, sd_pop = sigma, conf.level = 1-alpha)
+```
+**Problem 3:**
+
+a. We would use a z test statistic for this hypothesis.
+b. Z distribution. 
+$$Z_{obs} = \frac{\bar x - 8}{1 / \sqrt{30}} \sim^{H_0}N(0,1)$$.
+```{r}
+alpha = 0.05
+zlower = qnorm(alpha/2)
+zupper = qnorm(1-alpha/2)
+c(zlower, zupper)
+```
+The rejection region is $(-\infty, -1.96], [1.96, \infty).$
+
+c & d & e.
+```{r}
+set.seed(1)
+n = 30
+mu = 8
+sigma = 1
+
+zstat = c()
+rrcoverage = c()
+
+for(i in 1:20000) {
+  samp = rnorm(n, mu, sigma)
+  
+  zstat[i] = (mean(samp) - mu) / (sigma / sqrt(n))
+  
+  rrcoverage[i] = zstat[i] <= zlower || zstat[i] >= zupper
+}
+mean(rrcoverage)
+
+hist(zstat, col = "azure", xlab = "Values", main = "Histogram of Zobs ~ N(0,1)", breaks = 100)
+```
+d. My answer is 0.05025 which means 5% of the samples fall within the rejection region, thus is a 95% confidence interval. We are 95% confident that $Z_{obs}$ is captured in the confidence interval.
+
+e. As can be seen, the histogram of $Z_obs$ does simulate a normal distribution.
+
+**Problem 4:**
+
+a. We would use a $\chi ^2$ test statistic for this hypothesis.
+b. Chi-square distribution. 
+$$\chi^2_{obs} = (19-1)s^2/1 \sim^{H_0}\chi^2_{19-1}$$.
+```{r}
+alpha = 0.01
+n = 19
+
+chiupper = qchisq(1-alpha, n - 1)
+chiupper
+```
+The rejection region is $[34.81, \infty).$
+
+c & d & e.
+```{r}
+set.seed(1)
+mu = 8
+sigma = 1
+
+chistat = c()
+rrcoverage = c()
+
+for(i in 1:20000) {
+  samp = rnorm(n, mu, sigma)
+  var = var(samp)
+  chistat[i] = (n - 1)*var
+  
+  rrcoverage[i] = chiupper <= chistat[i]
+}
+mean(rrcoverage)
+
+hist(chistat, col = "azure", xlab = "Values", main = "Histogram of Xobs", breaks = 100)
+```
+
+d. My answer is 0.0092 which means roughly 1% of the samples fall within the rejection region, thus is a 99% confidence interval. We are 99% confident that $\chi^2_{obs}$ is captured in the confidence interval.
+
+e. As can be seen, the histogram of $\chi^2_{obs}$ does simulate a chi-squared distribution.

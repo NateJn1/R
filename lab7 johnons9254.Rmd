@@ -1,0 +1,117 @@
+---
+title: "Stat 3202 Lab 8"
+author: "Nathan Johnson.9254"
+date: "2023-03-22"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Problem 1:**
+**Part a:**
+$(1-\alpha)\%$ conf interval for $\mu$ (when $\sigma$ is unknown) is:
+$$\bar x - t_{1-\alpha/2,n-1}\frac{s}{\sqrt n} \leq \mu \leq \bar x + t_{1-\alpha/2,n-1}\frac{s}{\sqrt n}$$
+**Part b:**
+
+```{r}
+set.seed(1)
+
+mu = 10
+sigma = 3
+n = 5
+alpha = 0.01
+
+coverage = c()
+
+for(i in 1:10000) {
+samp = rnorm(n, mu, sigma)
+
+xbar = mean(samp)
+s = sd(samp)
+t = qt(1-alpha/2, n -1)
+
+lower = xbar - t*s/sqrt(n)
+upper = xbar + t*s/sqrt(n)
+
+coverage[i] = lower <= mu & mu <= upper
+}
+mean(coverage)
+mean(lower)
+mean(upper)
+```
+The coverage rate for these confidence intervals is about 99%.
+
+**Part c:**
+
+```{r}
+set.seed(1)
+
+mu = 10
+sigma = 3
+n = 50
+alpha = 0.01
+
+coverage = c()
+
+for (i in 1:10000) {
+samp = rnorm(n, mu, sigma)
+
+output = t.test(samp, conf.level = 1-alpha)
+
+lower = output$conf.int[1]
+upper = output$conf.int[2]
+
+coverage[i] = lower <= mu & mu <= upper
+}
+
+mean(coverage)
+```
+Sample size does not impact the coverage rate since the coverage rate remained 99% at n = 5 and 50.
+
+**Part d:**
+$\mu$ changed affects where the coverage is, but does not affect the distance between the lower and upper bound of the confidence interval.
+Changing $\sigma$ affects how large the coverage is. A larger $\sigma$ means a larger coverage. Smaller $\sigma$ means smaller coverage.
+As n gets larger, the coverage gets smaller.
+As alpha gets larger, the coverage gets smaller.
+
+**Problem 2:**
+**Part a:**
+
+```{r}
+set.seed(1)
+library(DescTools)
+
+n = 40
+p = 0.7
+
+alpha = 0.05
+
+lower = c()
+upper = c()
+coverage = c()
+
+for(i in 1:10000) {
+x = rbinom(1, n, p)
+output = BinomCI(x, n, conf.level = 1-alpha, method = "wald")
+
+lower[i] = output[2]
+upper[i] = output[3]
+
+coverage[i] = lower[i] <= p & p <= upper[i]
+}
+
+mean(coverage)
+
+```
+The confidence interval should have been 95%, but was 92.75% so no, coverage does not reach $(1-\alpha).$
+
+**Part b:**
+
+wilson: 0.9412
+waldcc: 0.9597
+agresti-coull: 0.9412
+jeffreys: 0.9412
+
+Waldcc is the closest. Strangely, wilson, agresti-coull, and jeffreys all came out the same.

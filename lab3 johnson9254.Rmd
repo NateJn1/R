@@ -1,0 +1,179 @@
+---
+title: "Stat 3202 Lab 3"
+author: "Nathan Johnson.9254"
+date: "2023-01-23"
+output: pdf_document
+---
+
+```{r}
+tidy.opts=list(width.cutoff=60, tidy=TRUE)
+```
+**Problem 1:**
+
+CLT: Normalize a particular distribution
+$\bar{X}$ has approximately mean $\mu$ and $\frac{\sigma^2}{n}$
+
+That is: $\frac{\bar{X} - \mu}{\frac{\sigma}{n}} \overset{approx}{\sim} N(0, 1)$
+
+**Part A:**
+```{r}
+set.seed(1)
+
+mc = 10000
+n = 4
+xbar = c()
+
+for (i in 1:mc) {
+  sample = rgamma(n, 2, 0.5)
+  xbar[i] = mean(sample)
+}
+
+hist(xbar, main = "Sampling Distribution of Sample Mean for n = 4", xlab = "Sample Mean", col = "azure")
+```
+
+This sampling distribution is slightly right skewed, so it is not normally distributed.
+
+**Part B:**
+```{r}
+set.seed(1)
+
+mc = 50000
+n = 4
+xbar = c()
+
+for (i in 1:mc) {
+  sample = rgamma(n, 2, 0.5)
+  xbar[i] = mean(sample)
+}
+
+hist(xbar, main = "Sampling Distribution of Sample Mean for n = 4", xlab = "Sample Mean", col = "azure")
+```
+
+No, it doesn't change because all was changed was the simulations, the number of samples was not changed.
+
+**Part C:**
+```{r}
+set.seed(1)
+
+mc = 10000
+n = 80
+xbar = c()
+
+for (i in 1:mc) {
+  sample = rgamma(n, 2, 0.5)
+  xbar[i] = mean(sample)
+}
+
+hist(xbar, main = "Sampling Distribution of Sample Mean for n = 80", xlab = "Sample Mean", col = "azure")
+```
+
+Yes, the sample was changed.
+
+**Part D:**
+
+The true mean of $\bar{X}$ is 4 and the variance is 8 as per the gamma distribution. 
+
+```{r}
+mean(xbar)
+var(xbar)*80
+```
+The mean is slightly under 4 (3.996224) and the variance is also slightly under 8 (7.976128).
+
+Due to Central Limit Theorem, $\bar{X}$ approximately has the distribution $N(4, 8/80)$.
+
+**Part E:**
+
+```{r}
+set.seed(1)
+
+mc = 10000
+n = 50
+xbar = c()
+
+for (i in 1:mc) {
+  sample = rcauchy(n)
+  xbar[i] = mean(sample)
+}
+
+hist(xbar, main = "Sampling Distribution of Sample Mean for n = 50", xlab = "Sample Mean", col = "azure")
+```
+
+
+**Problem 2:**
+
+**Part A:**
+```{r}
+set.seed(1)
+
+pois = rpois(5000, 7)
+barplot(table(pois), main = "Sampling Distribution of Poisson Distrbition", xlab = "Value", ylab = "frequency")
+```
+
+**Part B:**
+```{r}
+set.seed(1)
+
+pois = rpois(5000, 7)
+mean = mean(pois)
+mean
+var = var(pois)
+var
+```
+
+Mean is closer to the true value of $\lambda$. 
+
+**Part C:**
+I believe we would choose the sample mean. The sample variance can be changed more than the mean will be by outliers.
+
+**Problem 3:**
+
+**Part A:**
+As per the random variables:
+$E(A) = 6, V(A) = 4, E(B) = 5, V(B) = 10, E(C) = \frac{1}{10}, V(C) = \frac{1}{100}$
+To find the expectation of X, we have to do $E(X) = E(A+2B-3C) = E(A) + 2E(B) - 3E(C) = 6 + 2*5 - 3*\frac{1}{10} = 15.7$
+To find the variance of X, we have to do $V(X) = V(A+2B-3C) = V(A) + 4V(B) + 9V(C) = 4 + 4*10 + 9*\frac{1}{100}=44.09$
+
+**Part B:**
+```{r}
+set.seed(1)
+n=5000
+
+A=rnorm(n,6,2)
+B=rchisq(n,5)
+C=rexp(n,10)
+X=A+2*B-3*C
+EX=mean(X)
+VX=var(X)
+
+hist(X,main="Histogram of X", xlab = "Values")
+EX
+VX
+```
+The expectation of X is 15.75409 which is 0.05409 above the true mean and the variance of X is 44.63352 which is 0.543532 above the variance.
+
+**Part C:**
+```{r}
+set.seed(1)
+A=pnorm(3.5,6,2,lower.tail=TRUE)
+A
+```
+The probability that an observation from distribution A is less than 3.5 is 0.1056498.
+
+**Part D:**
+```{r}
+set.seed(1)
+A=rnorm(5000,6,2)
+lessThan=round(A<3.5)
+lessThanMean=mean(lessThan)
+lessThanMean
+```
+The true probability is 0.1056498 while the given probability is 0.1128 so they are pretty close. They aren't identical, but with greater and greater values of n, the distribution of A should get closer and closer to the true probability.
+
+**Part E:**
+```{r}
+set.seed(1)
+greaterThan=round(X>10)
+greaterThanMean=mean(greaterThan)
+greaterThanMean
+```
+The approximate probability of observations of X greater than 10 is 0.8082.
